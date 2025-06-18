@@ -90,7 +90,7 @@ Useful resources to help support your development experience with Analytics and 
 
 [.column]
 .Deployment Docs
-* xref:project-docs:columnar-sdk-release-notes.adoc[]
+* xref:project-docs:analytics-sdk-release-notes.adoc[]
 * xref:project-docs:compatibility.adoc[Compatibility]
 * xref:project-docs:sdk-full-installation.adoc[]
 
