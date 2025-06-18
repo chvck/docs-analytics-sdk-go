@@ -1,0 +1,148 @@
+= Managing Connections
+:description: This section describes how to connect the {name-sdk} to a Couchbase cluster.
+:page-toclevels: 2
+
+
+// Note to editors
+// 
+// This page pulls in content from -sdk-common-
+// and code samples from -example-dir-
+// 
+// It can be seen built at wwww.
+
+
+[abstract]
+{description}
+It contains best practices as well as information on TLS/SSL and advanced connection options, and a sub-page on troubleshooting Cloud connections.
+
+
+Our xref:hello-world:start-using-sdk.adoc[Getting Started pages] cover the basics of making a connection to a Capella Columnar cluster.
+This page is a wider look at the topic.
+
+
+== Connecting to a Cluster
+
+
+A connection to a Couchbase Server cluster is represented by a `Cluster` object.
+A `Cluster` provides access to Buckets, Scopes, and Collections, as well as various Couchbase services and management interfaces.
+The simplest way to create a `Cluster` object is to call `gocb.Connect()` with a <<connection-strings, connection string>>, username, and password:
+
+[source,golang]
+----
+include::go-sdk:devguide:example$go/connecting.go[tag=simpleconnect,indent=0]
+----
+
+WARNING: The above example uses a `try-with-resources` block to ensure the `Cluster` instance gets closed at the end.
+It's important to either use a `try-with-resources` block, or make sure to call `cluster.close()` when you're done with the cluster.
+
+NOTE: Capella's root certificate is *not* signed by a well known Certificate Authority.
+However, the certificate is bundled with the SDK, and is automatically trusted unless you specify a different certificate to trust.
+
+
+
+=== Connection Strings
+
+A Couchbase connection string is a comma-delimited list of IP addresses and/or hostnames, optionally followed by a list of parameters.
+
+The parameter list is just like the query component of a URI; name-value pairs have an equals sign (`=`) separating the name and value, with an ampersand (`&`) between each pair.
+Just as in a URI, the first parameter is prefixed by a question mark (`?`).
+
+For Columnar, as for all Capella products, connection must be made with Transport Layer Security (TLS) -- for full encryption of client-side traffic --
+for which the `couchbases://` schema is used as the root of the connection string (note the trailing *s*).
+
+.Simple connection string
+----
+couchbases://cb.<your-endpoint>.cloud.couchbase.com
+----
+
+.Connection string with two parameters
+----
+couchbases://cb.<your-endpoint>.cloud.couchbase.com?timeout.connect_timeout=30s&timeout.query_timeout=2m
+----
+
+The full list of recognized parameters is documented in the xref:ref:client-settings.adoc[client settings reference].
+
+
+
+////
+== Alternate Addresses and Custom Ports
+
+If your Couchbase Server cluster is running in a containerized, port mapped, or otherwise NAT'd environment like Docker or Kubernetes, a client running outside that environment may need additional information in order to connect the cluster.
+Both the client and server require special configuration in this case.
+
+On the server side, each server node must be configured to advertise its external address as well as any custom port mapping.
+This is done with the https://docs.couchbase.com/server/6.5/cli/cbcli/couchbase-cli-setting-alternate-address.html[`setting-alternate-address` CLI command] introduced in Couchbase Server 6.5.
+A node configured in this way will advertise two addresses: one for connecting from the same network, and another for connecting from an external network.
+
+On the client side, the externally visible ports must be used when connecting.
+If the external ports are not the default, you can specify custom ports using the overloaded `Cluster.connect()` method that takes a set of `SeedNode` objects instead of a connection string.
+
+[source,scala]
+----
+include::devguide:example$scala/ManagingConnections.scala[tag=seed-nodes,indent=0]
+----
+
+TIP: In a deployment that uses multi-dimensional scaling, a custom KV port is only applicable for nodes running the KV service.
+A custom manager port may be specified regardless of which services are running on the node.
+
+In many cases the client is able to automatically select the correct set of addresses to use when connecting to a cluster that advertises multiple addresses.
+If the detection heuristic fails in your environment, you can override it by setting the `io.networkResolution` client setting to `default` if the client and server are on the same network, or `external` if they're on different networks.
+
+NOTE: Any TLS certificates must be set up at the point where the connections are being made.
+////
+
+
+
+
+
+////
+// DNS-SRV
+
+include::{version-common}@sdk:shared:partial$dnssrv-pars.adoc[tag=dnssrv]
+
+DNS SRV bootstrapping is enabled by default in the {name-sdk}.
+In order to make the SDK use the SRV records, you need to pass in the hostname from your records (here `example.com`):
+
+[source,scala]
+----
+include::devguide:example$scala/ManagingConnections.scala[tag=dnssrv,indent=0]
+----
+
+[source,scala]
+----
+ClusterEnvironment env = ClusterEnvironment.builder().ioConfig(IoConfig.enableDnsSrv(true)).build();
+----
+
+If the DNS SRV records could not be loaded properly you'll get the exception logged and the given host name will be used as a A record lookup.
+
+----
+WARNING: DNS SRV lookup failed, proceeding with normal bootstrap.
+javax.naming.NameNotFoundException: DNS name not found [response code 3];
+   remaining name '_couchbase._tcp.example.com'
+	at com.sun.jndi.dns.DnsClient.checkResponseCode(DnsClient.java:651)
+	at com.sun.jndi.dns.DnsClient.isMatchResponse(DnsClient.java:569)
+----
+
+Also, if you pass in more than one node, DNS SRV bootstrap will not be initiated:
+
+----
+INFO: DNS SRV enabled, but less or more than one seed node given.
+Proceeding with normal bootstrap.
+----
+////
+
+
+== Local Development
+
+
+We strongly recommend that the client and server xref:project-docs:compatibility.adoc#network-requirements[are in the same LAN-like environment] (e.g. AWS Region).
+As this may not always be possible during development, read the guidance on working with xref:ref:client-settings.adoc#commonly-used-options[constrained network environments].
+More details on connecting your client code to Couchbase Capella can be found xref:cloud:clouds:connect-an-sdk.adoc#connecting-your-sdk-to-capella[in the Capella Operational docs].
+
+
+=== Troubleshooting Connections to Cloud
+
+Some DNS caching providers (notably, home routers) can’t handle an SRV record that’s large -- if you have DNS-SRV issues with such a set-up, reduce your DNS-SRV to only include three records.
+[_For development only, not production._]. 
+Our xref:troubleshooting-connections.adoc[Troubleshooting Connections] page will help you to diagnose this and other problems -- as well as introducing the SDK doctor tool.
+
