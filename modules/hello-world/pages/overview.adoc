@@ -16,7 +16,7 @@ see our xref:go-sdk:hello-world:overview.adoc[Go Operational SDK].
 
 {empty} +
 
-== icon:database[] Using Your Columnar Cluster
+== icon:database[] Using Your Analytics Cluster
 
 How-to guides and tutorials to help you start your development journey with Analytics and the Go SDK.
 
