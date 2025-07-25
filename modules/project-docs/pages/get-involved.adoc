@@ -4,8 +4,8 @@
 
 == Contributing
 
-Couchbase welcomes community contributions to the Java SDK.
-The https://github.com/couchbase/couchbase-columnar-go-client[Go Columnar SDK source code^] is available on GitHub.
+Couchbase welcomes community contributions to the Go Analytics SDK.
+The https://github.com/couchbase/gocbanalytics[Go Analytics SDK source code^] is available on GitHub.
 Please see the 
 https://github.com/couchbase/couchbase-jvm-clients/blob/master/CONTRIBUTING.md[CONTRIBUTING^] file for further information.
 

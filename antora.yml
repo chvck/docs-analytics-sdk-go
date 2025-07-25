@@ -1,6 +1,6 @@
 name: go-analytics-sdk
 version: '1.0'
-title: Enterprise Analytics Go SDK
+title: Go Analytics SDK
 start_page: hello-world:overview.adoc
 nav:
 - modules/ROOT/nav.adoc
@@ -18,4 +18,5 @@ asciidoc:
     name-sdk: 'Go Analytics SDK'
     sdk_api: '1.0'
     sdk-api-link: https://docs.couchbase.com/sdk-api/analytics-go-client
-    sdk-gh-link: https://github.com/couchbase/couchbase-jvm-clients
+    sdk-gh-link: https://github.com/couchbase/gocbanalytics
+    

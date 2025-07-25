@@ -1,6 +1,6 @@
 = Client Settings
 :description: Change the SDK's behavior by configuring client settings.
-:page-toclevels: 2
+:page-toclevels: 3
 
 [abstract]
 {description}
@@ -10,45 +10,16 @@ In addition to this, as with SDK 2.0, the majority of these options can also be 
 
 
 
-
-
-
-
-
-
-
-
-////
-[#configure-with-code]
 == Configure with Code
 
-To configure SDK client settings by writing code, provide a configuration callback when creating the `Cluster` instance. Here's an example that configures several settings by passing the optional third argument to `Cluster.newInstance()`:
+To configure SDK client settings by writing code, provide an options block when creating the `Cluster` instance. Here's an example that configures several settings by passing the optional third argument to `cbanalytics.NewCluster()`:
 
-[source,java]
+[source,go]
 ----
-Cluster cluster = Cluster.newInstance(
-    connectionString,
-    Credential.of(username, password),
-    clusterOptions -> clusterOptions // <1>
-        .timeout(timeoutOptions -> timeoutOptions // <2>
-            .connectTimeout(Duration.ofSeconds(30))
-            .queryTimeout(Duration.ofMinutes(2))
-        ) // <3>
-        .security(securityOptions -> securityOptions // <4>
-            .cipherSuites(List.of("MY_APPROVED_CIPHER_SUITE"))
-        )
-);
+include::devguide:example$configuration.go[tags=configuration]
 ----
-<1> The parameter type is `Consumer<ClusterOptions>`.
-The SDK passes a `ClusterOptions` object to your consumer.
-Configure the options by calling methods on the given object.
 
-<2> The same callback pattern extends to the sub-builders for different categories. For example, `ClusterOptions.timeout()` takes a `Consumer<TimeoutOptions>`.
-
-<3> The `*Options` classes are mutable builders.
-Every method returns the same builder, allowing for method call chaining.
-
-<4> Most users won't need to configure security settings, but it's shown here for completeness.
+Note: Options blocks can created using builder-style functions, like above, or by assigning to the struct fields directly.
 
 TIP: You don't need to call every method in the above example; call only the methods where you want to override the client setting's default value.
 
@@ -71,17 +42,15 @@ If the same client setting is specified both in code and in the connection strin
 TIP: If your application reads the connection string from a config file (or other external source), you can change the connection string to override client settings without having to recompile your code.
 
 
-[#durations]
 === Durations
 
-For client settings that represent durations, the connection string parameter's value is specified using the format accepted by https://pkg.go.dev/time#ParseDuration[Golang's time.ParseDuration] method.
+For client settings that represent durations, the connection string parameter's value is specified using the format accepted by https://pkg.go.dev/time#ParseDuration[Golang's `time.ParseDuration`] method.
 
-> A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+> A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", and "h".
 
 Note that although the Golang syntax allows negative durations, the SDK rejects non-positive timeout durations.
 
 
-[#booleans]
 === Booleans
 
 For boolean client settings, the SDK expects the connection string parameter value to be `true` or `false` (case-sensitive).
@@ -89,13 +58,11 @@ For boolean client settings, the SDK expects the connection string parameter val
 The values `1` and `0` may be used as aliases for `true` and `false`.
 
 
-[#client-settings-rerence]
 == Client Settings Reference
 
 This section describes all client settings supported by the SDK.
 
 
-[#timeout-options]
 === Timeout Options
 
 Configuring timeouts gives you control over how long the SDK waits for operations to succeed or fail.
@@ -111,11 +78,10 @@ Indirectly controls SDK bootstrap timeout, which is 1.5 times this duration.
 
 |[[timeout.query_timeout]]`timeout.query_timeout`
 |`10m` (10 minutes)
-|Default query execution time limit. Can be overridden for specific queries by setting the `timeout` query option when executing the query.
+|Default query execution time limit for executing the query when no deadline is applied by `context.Context` at the query level.
 |===
 
 
-[#security-options]
 === Security Options
 
 The SDK is secure by default.
@@ -132,20 +98,14 @@ You probably won't need to configure the SDK's security options unless:
 |Connection string parameter |Default value |Description
 
 |[[security.cipher_suites]]`security.cipher_suites`
-|Empty string / empty list (SDK uses any cipher suite supported by the JVM)
+|Empty string / empty list (SDK uses any cipher suite supported by the Go runtime)
 |Limits the set of cipher suites the SDK may use when negotiating secure connections to the server.
 
 Leave this at the default value unless you have special security compliance requirements.
 
 When specifying this as a connection string parameter, the value is a comma-delimited list with no whitespace.
 
-Consult your JVM reference documentation for a list of supported cipher suite names.
-
-|[[security.trust_only_non_prod]]`security.trust_only_non_prod`
-|N/A
-|Setting this to `true` enables the SDK to connect securely to the internal Couchbase non-production hosted service, which uses a different certificate authority than the production site.
-
-You probably won't need to do this unless you are a Couchbase employee.
+Consult your Go reference documentation for a list of supported cipher suite names.
 
 |[[security.trust_only_pem_file]]`security.trust_only_pem_file`
 |N/A
@@ -155,8 +115,8 @@ In the unlikely event the Couchbase Capella CA is compromised, you can use this 
 |===
 
 
-[#danger-zone]
 ==== Danger Zone
+
 Finally, there is one security option whose use is strongly discouraged in nearly all circumstances.
 Setting `security.disable_server_certificate_verification` to `true` allows the SDK to connect to any server, regardless of whether the server presents a certificate trusted by the SDK.
 
@@ -164,44 +124,17 @@ CAUTION: Disabling server certificate verification is roughly equivalent to send
 Don't do this unless connecting to a server running locally on your development machine.
 
 
-[#deserializer]
-=== Deserializer
+=== Unmarshaler
 
-The SDK uses a component called a `Deserializer` to convert query result rows into Java objects. The default implementation is `JacksonDeserializer`, a thin wrapper around a https://github.com/FasterXML/jackson[Jackson] `ObjectMapper`.
+The SDK uses a component called an `Unmarshaler` to convert query result rows into Go typed. The default implementation is `JSONUnmarshaler`, a thin wrapper around `json.Unmarshal` from `"encoding/json"`.
 
-By default, a Jackson `ObjectMapper` throws an exception if it encounters a JSON field that does not match the structure of the target class.
-Here's an example that shows how to configure the `ObjectMapper` with different behavior:
+This cluster option specifies the _default_ unmarshaler.
+You can override the unmarshaler for a specific query by setting the `Unmarshaler` query option when executing the query.
 
-[source,java]
-----
-ObjectMapper mapper = JsonMapper.builder()
-    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) // <1>
-    .build();
+==== Custom unmarshalers
 
-Cluster cluster = Cluster.connect(
-    connectionString,
-    Credential.of(username, password),
-    clusterOptions -> clusterOptions
-        .deserializer(new JacksonDeserializer(mapper))
-);
-----
-<1> Ignore unknown properties instead of throwing exception.
+Implement the `Unmarshaler` interface to add support for other JSON processing libraries.
 
-This cluster option specifies the _default_ deserializer.
-You can override the deserializer for a specific query by setting the `deserializer` query option when executing the query.
-
-TIP: If you prefer not to work with the `Deserializer` interface, you can always call `row.bytes()` to get a row's content as a raw byte array.
-Then you can process the byte array however you like.
-
-
-[#custom-deserializers]
-==== Custom deserializers
-
-Implement the `Deserializer` interface to add support for other JSON processing libraries.
-The SDK source code repository includes https://github.com/couchbase/couchbase-jvm-clients/tree/master/columnar-java-client/src/test/java/com/couchbase/columnar/client/java/examples/codec[examples for Gson and DSL-JSON] that you can copy into your own project or use as a starting point for other libraries.
-
-
-[#dns-srv]
 === DNS SRV
 
 By default, the SDK does a DNS SRV lookup on the connection string's hostname in order to locate nodes in the cluster.
@@ -212,4 +145,5 @@ For example:
 ----
 couchabses://example.com?srv=false
 ----
-////
+
+

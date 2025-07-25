@@ -1,6 +1,6 @@
 = Compatibility
-:description: Platform compatibility, and features available in different SDK versions, and compatibility between Server and SDK. \
-Plus notes on Cloud, networks, and AWS Lambda.
+:description: Platform compatibility, and features available in different SDK versions, and compatibility between self-managed or Capella Analytics and the SDK.
+// Plus notes on Cloud, networks, and AWS Lambda.
 :page-toclevels: 3
 :table-caption!:
 
@@ -21,7 +21,7 @@ using https://go.dev/blog/using-go-modules[Go Modules].
 
 === OS Compatibility
 
-include::{sdk_api}@columnar-sdk:shared:partial$compatibility.adoc[tag=os-compat-jvm]
+include::{sdk_api}@analytics-sdk:shared:partial$compatibility.adoc[tag=os-compat-jvm]
 
 
 
@@ -29,20 +29,38 @@ include::{sdk_api}@columnar-sdk:shared:partial$compatibility.adoc[tag=os-compat-
 
 === Network Requirements
 
-include::{sdk_api}@columnar-sdk:shared:partial$network-requirements.adoc[tag=lan-like]
+include::{sdk_api}@analytics-sdk:shared:partial$network-requirements.adoc[tag=lan-like]
 
 
 
 
 
 
-== Capella Columnar Compatibility
+== Couchbase Analytics Compatibility
 
 
-Capella Columnar is a fully hosted service, continually updated, and offering the latest version --
+The {sdk_dot_minor} {name-sdk} is compatible with our hosted Capella Analytics service, and with recent versions of self-managed Enterprise Analytics.
+
+
+
+=== Enterprise Analytics Compatibility
+
+
+
+
+*TODO*
+table
+
+
+
+
+=== Capella Analytics Compatibility
+
+
+Capella Analytics is a fully hosted service, continually updated, and offering the latest version --
 with users having a few weeks to upgrade from the previous version.
-As such, the latest Couchbase Columnar SDKs are tested against the latest versions.
-Where older versions of the {name-sdk} pre-date significant new features in Columnar, those differences will be noted in this section.
+As such, the latest Couchbase Analytics SDKs are tested against the latest versions.
+Where older versions of the {name-sdk} pre-date significant new features in Capella Analytics, those differences will be noted in this section.
 
 
 
@@ -52,7 +70,7 @@ Where older versions of the {name-sdk} pre-date significant new features in Colu
 ////
 === API Version
 
-include::{sdk_api}@columnar-sdk:shared:partial$compatibility.adoc[tag=api-version]
+include::{sdk_api}@analytics-sdk:shared:partial$compatibility.adoc[tag=api-version]
 ////
 
 
@@ -62,7 +80,7 @@ include::{sdk_api}@columnar-sdk:shared:partial$compatibility.adoc[tag=api-versio
 
 === Interface Stability
 
-include::{version-common}@columnar-sdk:shared:partial$interface-stability-pars.adoc[tag=interface-stability-section]
+include::{version-common}@analytics-sdk:shared:partial$interface-stability-pars.adoc[tag=interface-stability-section]
 
 
 
@@ -71,7 +89,7 @@ include::{version-common}@columnar-sdk:shared:partial$interface-stability-pars.a
 ////
 === Older SDK Versions
 
-include::{version-common}@sdk:shared:partial$archive.adoc[tag=link]
+include::{version-common}@analytics-sdk:shared:partial$archive.adoc[tag=link]
 ////
 
 ////
