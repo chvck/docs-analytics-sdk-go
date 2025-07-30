@@ -9,16 +9,18 @@
 
 
 
-The Enterprise Analytics Go SDK allows you to connect to a Capella Analytics cluster -- or self-managed Enterprise Analytics cluster -- from Go.
+The Analytics Go SDK allows you to connect to a xref:analytics:intro:intro.adoc[Enterprise Analytics] cluster from Go.
 For connecting to a Couchbase Server Cluster -- self-managed, or Capella Operational --
 see our xref:go-sdk:hello-world:overview.adoc[Go Operational SDK].
+
+TIP: Connecting to a xref:columnar:intro:intro.adoc[_Capella_ Analytics] cluster from Node.js currently requires a xref:nodejs-columnar-sdk:hello-world:overview.adoc[Node.js Columnar SDK].
 
 
 {empty} +
 
 == icon:database[] Using Your Analytics Cluster
 
-How-to guides and tutorials to help you start your development journey with Analytics and the Go SDK.
+How-to guides and tutorials to help you start your development journey with Enterprise Analytics and the Go SDK.
 
 ++++
 <div class="card-row three-column-row">
