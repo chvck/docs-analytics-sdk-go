@@ -1,4 +1,4 @@
-* xref:hello-world:overview.adoc[Enterprise Analytics {name_platform} SDK Overview]
+* xref:hello-world:overview.adoc[{name-sdk} Overview]
 
 * xref:hello-world:start-using-sdk.adoc[Hello World]
 ** xref:howtos:managing-connections.adoc[Connecting to Enterprise Analytics]
